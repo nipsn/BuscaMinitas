@@ -1,5 +1,5 @@
 object Main {
   def main(args: Array[String]): Unit = {
-    println("Hello world!")
+    print(new Grid(5,5))
   }
 }
