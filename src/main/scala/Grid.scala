@@ -3,7 +3,7 @@ class Grid(sizeX: Int, sizeY: Int) {
   
   // puesto a buco. añadir lógica
   grid(0)(0) = Empty()
-  grid(0)(1) = Numbered(2)
+  grid(0)(1) = Numbered(3)
   grid(0)(2) = Numbered(2)
   grid(0)(3) = Numbered(2)
   grid(0)(4) = Numbered(2)
