@@ -1,10 +1,13 @@
+package MineSweeper
+
 // TODO: remove vars
-sealed abstract class Cell(var visible: Boolean) {
+/*
+sealed abstract class Cell(val visible: Boolean) {
   def toString: String
   def pick(): Unit
   def isVisible: Boolean = visible
 
-  def setVisible(): Unit = this.visible = true
+  def setVisible(): Cell = this.copy(visible=true)
 }
 
 case class Empty() extends Cell(visible = false) {
@@ -22,4 +25,22 @@ case class Bomb(marked: Boolean) extends Cell(visible = false) {
   override def toString: String = if (this.marked) "λ" else " "
   // end game
   override def pick(): Unit = super.setVisible()
+}
+*/
+////////////
+case class Cell(visible: Boolean, tagged: Boolean, kind: CellKind) {
+
+  def makeVisible(cell: Cell): Cell = this.copy(visible=true)
+  def tag(cell: Cell): Cell = this.copy(tagged = true)
+}
+
+case object Cell {
+
+  /* Initial Cell */
+  def apply(kindc: CellKind): Cell = Cell(
+    visible = false,
+    tagged = false,
+    kind = kindc
+  )
+
 }

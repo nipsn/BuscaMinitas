@@ -1,3 +1,5 @@
+import MineSweeper.Grid
+
 object Main {
   def main(args: Array[String]): Unit = {
     val grid = new Grid(5,5)
