@@ -1,37 +1,22 @@
 package MineSweeper
 
-// TODO: remove vars
-/*
-sealed abstract class Cell(val visible: Boolean) {
-  def toString: String
-  def pick(): Unit
-  def isVisible: Boolean = visible
-
-  def setVisible(): Cell = this.copy(visible=true)
-}
-
-case class Empty() extends Cell(visible = false) {
-  override def toString: String = if (super.isVisible) "_" else " "
-  // recursive search
-  override def pick(): Unit = super.setVisible()
-}
-
-case class Numbered(value: Int) extends Cell(visible = false) {
-  override def toString: String = if (super.isVisible) this.value.toString else " "
-  override def pick(): Unit = super.setVisible()
-}
-
-case class Bomb(marked: Boolean) extends Cell(visible = false) {
-  override def toString: String = if (this.marked) "λ" else " "
-  // end game
-  override def pick(): Unit = super.setVisible()
-}
-*/
-////////////
 case class Cell(visible: Boolean, tagged: Boolean, kind: CellKind) {
 
-  def makeVisible(cell: Cell): Cell = this.copy(visible=true)
-  def tag(cell: Cell): Cell = this.copy(tagged = true)
+  override def toString: String = if (this.tagged) "λ" else {
+    this.kind match {
+      case Bomb => if (this.visible) "B" else " "
+      case Empty => if (this.visible) "_" else " "
+      case Numbered(value) => if (this.visible) value.toString else " "
+    }
+  }
+
+  def makeVisible: Cell = this.copy(visible=true)
+  def changeTag: Cell = this.copy(tagged = !this.tagged)
+
+  def prevail: Boolean = this match {
+    case Cell(true, tag, Bomb) => tag
+    case _ => true
+  }
 }
 
 case object Cell {
