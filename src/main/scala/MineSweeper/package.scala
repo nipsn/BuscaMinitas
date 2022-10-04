@@ -6,11 +6,23 @@ package object MineSweeper {
     def emptyGrid: Grid = Array.ofDim[Cell](tuple._1, tuple._2)
       .map(row => row.map(_ => Cell(Empty)))
 
-    def emptyGridWithBombs(nBombs: Int): Grid = {
-      generateRandomBombs(tuple, nBombs)
-        .foldRight(emptyGrid)((coords, myGrid) => myGrid.modify(coords)(Cell(visible = true, tagged = false, Bomb)))
+    def initialGrid(nBombs: Int): Grid = {
+      val gridWBombs = generateRandomBombs(tuple, nBombs)
+        .foldRight(emptyGrid)((coords, myGrid) => myGrid.modify(coords)(Cell(Bomb)))
+
+      numerateGrid(tuple, gridWBombs)
     }
 
+    private def numerateGrid(size: (Int, Int), grid: Grid): Grid = {
+      val (gridLen, gridWid) = size
+      val xCoords = (0 to gridLen).toList
+      val yCoords = (0 to gridWid).toList
+      xCoords.flatMap(x => yCoords.map(y => (x, y))
+        .filter(t => coordsAreValid(t, grid) && grid(t._1, t._2).kind != Bomb))
+        .foldRight(grid)((pair, myGrid) => myGrid.numerateCell(pair))
+    }
+
+    private def coordsAreValid(coords: (Int, Int), grid: Grid): Boolean = coords._1 >= 0 && coords._1 < grid.length && coords._2 >= 0 && coords._2 < grid(0).length
     private def generateRandomBombs(gridSize: (Int, Int), nBombs: Int): List[(Int, Int)] = {
       val (coordX, coordY) = gridSize
       val r = scala.util.Random
@@ -37,6 +49,13 @@ package object MineSweeper {
         case Cell(_, _, Empty) => discover((x, y), grid)
         case Cell(_, tagged, Numbered(n)) => grid.modify(x, y)(Cell(visible = true, tagged = tagged, Numbered(n)))
       }
+    }
+
+    def numerateCell(coords: (Int, Int)): Grid = {
+      val nBombs = getAdjacents(coords, grid)
+        .count(pair => pair._1.kind == Bomb)
+      val newCell = if(nBombs == 0) Cell(Empty) else Cell(Numbered(nBombs))
+      grid.modify(coords)(newCell)
     }
 
     private def makeFirstLevelNumberedVisible(adjacents: List[(Cell, (Int, Int))], gridO: Grid): Grid = {
