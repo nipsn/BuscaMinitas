@@ -1,3 +1,5 @@
+import scala.annotation.tailrec
+
 package object MineSweeper {
 
   type Grid = Array[Array[Cell]]
@@ -26,8 +28,16 @@ package object MineSweeper {
     private def generateRandomBombs(gridSize: (Int, Int), nBombs: Int): List[(Int, Int)] = {
       val (coordX, coordY) = gridSize
       val r = scala.util.Random
-      // TODO: bombs can generate in same coords multiple times (check nBombs == set.size)
-      (1 to nBombs).foldRight(Set[(Int, Int)]())((_, mySet) => mySet.incl((r.nextInt(coordX), r.nextInt(coordY)))).toList
+      @tailrec
+      def genAux(auxSet: Set[(Int, Int)], elem: (Int, Int)): Set[(Int, Int)] = {
+        if (auxSet.size < nBombs) {
+          val newSet = if(auxSet.contains(elem)) auxSet else auxSet.incl((r.nextInt(coordX), r.nextInt(coordY)))
+          genAux(newSet, (r.nextInt(coordX), r.nextInt(coordY)))
+        } else {
+          auxSet
+        }
+      }
+      genAux(Set[(Int, Int)](), (r.nextInt(coordX), r.nextInt(coordY))).toList
     }
   }
 
@@ -49,6 +59,13 @@ package object MineSweeper {
         case Cell(_, _, Empty) => discover((x, y), grid)
         case Cell(_, tagged, Numbered(n)) => grid.modify(x, y)(Cell(visible = true, tagged = tagged, Numbered(n)))
       }
+    }
+
+    def makeVisible: Grid = {
+      val xCoords = grid.indices.toList
+      val yCoords = grid.head.indices.toList
+      xCoords.flatMap(x => yCoords.map(y => ((x, y), grid(x, y))))
+        .foldRight(grid)((pair, myGrid) => myGrid.modify(pair._1)(pair._2.makeVisible))
     }
 
     def numerateCell(coords: (Int, Int)): Grid = {
