@@ -10,7 +10,8 @@ case class Cell(visible: Boolean, tagged: Boolean, kind: CellKind) {
     }
   }
 
-  def makeVisible: Cell = this.copy(visible=true)
+  def makeVisible: Cell = this.copy(visible = true)
+
   def changeTag: Cell = this.copy(tagged = !this.tagged)
 
   def prevail: Boolean = this match {
