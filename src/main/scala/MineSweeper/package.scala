@@ -2,19 +2,21 @@ import scala.annotation.tailrec
 
 package object MineSweeper {
 
+  private def coordsAreValid(coords: (Int, Int), grid: Grid): Boolean = coords._1 >= 0 && coords._1 < grid.length && coords._2 >= 0 && coords._2 < grid(0).length
+
   type Grid = Array[Array[Cell]]
 
   /* Grid utilities */
-  implicit class EmptyGridFromDim(tuple: (Int, Int)) {
-    def emptyGrid: Grid = Array.ofDim[Cell](tuple._1, tuple._2)
-      .map(row => row.map(_ => Cell(Empty)))
-
+  implicit class EmptyGridFromDim(size: (Int, Int)) {
     def initialGrid(nBombs: Int): Grid = {
-      val gridWBombs = generateRandomBombs(tuple, nBombs)
+      val gridWBombs = generateRandomBombs(size, nBombs)
         .foldRight(emptyGrid)((coords, myGrid) => myGrid.modify(coords)(Cell(Bomb)))
 
-      numerateGrid(tuple, gridWBombs)
+      numerateGrid(size, gridWBombs)
     }
+
+    def emptyGrid: Grid = Array.ofDim[Cell](size._1, size._2)
+      .map(row => row.map(_ => Cell(Empty)))
 
     private def numerateGrid(size: (Int, Int), grid: Grid): Grid = {
       val (gridLen, gridWid) = size
@@ -25,9 +27,8 @@ package object MineSweeper {
         .foldRight(grid)((pair, myGrid) => myGrid.numerateCell(pair))
     }
 
-    private def coordsAreValid(coords: (Int, Int), grid: Grid): Boolean = coords._1 >= 0 && coords._1 < grid.length && coords._2 >= 0 && coords._2 < grid(0).length
-
     private def generateRandomBombs(gridSize: (Int, Int), nBombs: Int): List[(Int, Int)] = {
+      // TODO: exception when nBombs > gridSize (x * y)
       val (coordX, coordY) = gridSize
       val r = scala.util.Random
 
@@ -119,11 +120,10 @@ package object MineSweeper {
       val xCoords = (-1 to 1).map(coordX + _)
       val yCoords = (-1 to 1).map(coordY + _)
       xCoords.flatMap(x => yCoords.map(y => (x, y))
-        .filter(t => t != (coordX, coordY) && coordsAreValid(t))
+        .filter(t => t != (coordX, coordY) && coordsAreValid(t, grid))
         .map(t => (grid(t._1)(t._2), t))).toList
     }
 
-    private def coordsAreValid(coords: (Int, Int)): Boolean = coords._1 >= 0 && coords._1 < grid.length && coords._2 >= 0 && coords._2 < grid(0).length
   }
 
 }
