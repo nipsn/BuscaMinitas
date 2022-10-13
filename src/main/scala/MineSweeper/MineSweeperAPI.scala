@@ -1,8 +1,9 @@
 package MineSweeper
 
 import scala.util.Try
+import Expose._
 
-case class MineSweeperAPI(grid: Grid) {
+case class MineSweeperAPI(grid: Grid) extends Tag {
 
   /* State of the competition */
   def alive: Boolean = this.grid.flatten.forall(_.prevail)
@@ -15,23 +16,39 @@ case class MineSweeperAPI(grid: Grid) {
   }
   def isFinished: Boolean = this.lost || this.won
 
-  def makeExpose: MineSweeperAPI = ??? //safe computation (TO DO)
+  def makePick(x: Int, y: Int): MineSweeperAPI = {
+    /* Safe computation */
+    grid(x)(y) match {
+      case Cell(_, _, Empty) => MineSweeperAPI(grid.discover(x, y))
+      case _ => MineSweeperAPI(grid.makeVisible((x, y)))
+    }
+  }
 
-  /* manage arrayindexoutofboundsexception error too (maybe utility) */
-  def takeExpose(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
-    Try(this.grid(tuple._1, tuple._2))
+  def pick(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
+    Try(this.grid(tuple))
       .toEither.left.map{
       case _: ArrayIndexOutOfBoundsException => ArrayIndexOutOfBounds
       case e: Throwable => GenericError(e)
     }.flatMap{
       case Cell(true, _, _) => Left(AlreadyExposedCell)
-      case _ => Right(this.makeExpose)
+      case Cell(_, true, _) => Left(AlreadyTaggedCell)
+      case _ => Right(this.makePick(tuple._1, tuple._2))
     }
+  }
+
+  def tag(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
+    this.grid.tag(tuple).map(grid => MineSweeperAPI(grid))
   }
 
 }
 
 object MineSweeperAPI{
-  def apply(size: Int): MineSweeperAPI = MineSweeperAPI(grid = (size, size).emptyGrid)
+
+  /* Empty squared Grid */
+  def apply(side: Int): MineSweeperAPI = MineSweeperAPI(grid = (side, side).emptyGrid)
+
+  /* Initial grid with random bomb placement */
+  def apply(size: (Int, Int), nBombs: Int): MineSweeperAPI = MineSweeperAPI(grid = size.initialGrid(nBombs))
+
 }
 

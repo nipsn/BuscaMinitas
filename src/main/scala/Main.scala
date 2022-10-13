@@ -2,12 +2,15 @@ import MineSweeper._
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val initialGrid = (5, 8).initialGrid(20)
-    println(initialGrid.mkString)
+    /* Set dependencies */
+    val nBombs: Int = 20
+    /* Define game machine */
+    val gameMachine = MineSweeperAPI((5, 8), nBombs)
+    println(gameMachine.grid.mkString)
     println("\n")
-    println(initialGrid.pick(2, 2).tag(2, 2).mkString)
+    println(gameMachine.pick(2, 2).flatMap(_.tag(3, 2).map(_.grid.mkString)))
     println("\n")
-    println(initialGrid.makeVisible.mkString)
+    println(gameMachine.grid.makeVisible.mkString)
 
   }
 }
