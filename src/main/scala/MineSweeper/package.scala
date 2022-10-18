@@ -45,11 +45,11 @@ package object MineSweeper extends BombGenerator {
     def mkString: String = grid.map(row => row.map(cell => cell.toString).mkString("[", "][", "]")).mkString("\n")
 
     def getAdjacents(coords: (Int, Int)): List[(Cell, (Int, Int))] = {
-      (-1 to 1).map(coords._1 + _).flatMap(x =>
-        (-1 to 1).map(coords._2 + _).map(y =>
-        (x, y)))
-        .filter(tuple => tuple != coords && grid.valid(tuple))
-      .map(tuple => (grid(tuple), tuple)).toList
+      for {
+        x <- (-1 to 1).map(_ + coords._1).toList
+        y <- (-1 to 1).map(_ + coords._2).toList
+        if (x, y) != coords && grid.valid(x, y)
+      } yield (grid(x, y), (x, y))
     }
   }
 

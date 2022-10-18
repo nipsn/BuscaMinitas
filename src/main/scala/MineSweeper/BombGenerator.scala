@@ -13,11 +13,14 @@ trait BombGenerator {
     }
 
     def numerateGrid(size: (Int, Int)): Grid = {
-      (0 to size._1).flatMap(x =>
-        (0 to size._2).map(y =>
-          (x, y)))
-        .filter(tuple => grid.valid(tuple) && grid(tuple).kind != Bomb)
-      .foldRight(grid)((pair, myGrid) => myGrid.numerateCell(pair))
+      {
+        for {
+          x <- 0 to size._1
+          y <- 0 to size._2
+          if grid.valid(x, y) && grid(x, y).kind != Bomb
+        } yield (x, y)
+      }.foldRight(grid)((pair, myGrid) => myGrid.numerateCell(pair))
+
     }
   }
 
