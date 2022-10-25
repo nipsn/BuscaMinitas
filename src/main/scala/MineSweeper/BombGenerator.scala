@@ -5,13 +5,6 @@ import scala.annotation.tailrec
 trait BombGenerator {
   implicit class BombGenerator(grid: Grid) {
 
-    def numerateCell(coords: (Int, Int)): Grid = {
-      val nBombs = grid.getAdjacents(coords)
-        .count(pair => pair._1.kind == Bomb)
-      val newCell = if (nBombs == 0) Cell(Empty) else Cell(Numbered(nBombs))
-      grid.modify(coords)(newCell)
-    }
-
     def numerateGrid(size: (Int, Int)): Grid = {
       {
         for {
@@ -19,8 +12,14 @@ trait BombGenerator {
           y <- 0 to size._2
           if grid.valid(x, y) && grid(x, y).kind != Bomb
         } yield (x, y)
-      }.foldRight(grid)((pair, myGrid) => myGrid.numerateCell(pair))
+      }.foldLeft(grid)((myGrid, pair) => myGrid.numerateCell(pair))
+    }
 
+    def numerateCell(coords: (Int, Int)): Grid = {
+      val nBombs = grid.getAdjacents(coords)
+        .count { case (cell, _) => cell.kind == Bomb }
+      val newCell = if (nBombs == 0) Cell(Empty) else Cell(Numbered(nBombs))
+      grid.modify(coords)(newCell)
     }
   }
 

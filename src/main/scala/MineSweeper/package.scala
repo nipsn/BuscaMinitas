@@ -10,9 +10,9 @@ package object MineSweeper extends BombGenerator {
       .map(row => row.map(_ => Cell(Empty)))
 
     def initialGrid(nBombs: Int): Grid = {
-      val gridWBombs = generateRandomBombs(size, nBombs)
-        .foldRight(emptyGrid)((coords, myGrid) => myGrid.modify(coords)(Cell(Bomb)))
-      gridWBombs.numerateGrid(size)
+      generateRandomBombs(size, nBombs)
+        .foldLeft(emptyGrid)((myGrid, coords) => myGrid.modify(coords)(Cell(Bomb)))
+        .numerateGrid(size)
     }
   }
 

@@ -20,13 +20,11 @@ case class Cell(visible: Boolean, tagged: Boolean, kind: CellKind) {
   }
 }
 
-case object Cell {
-
+object Cell {
   /* Initial Cell */
   def apply(kindc: CellKind): Cell = Cell(
     visible = false,
     tagged = false,
     kind = kindc
   )
-
 }
