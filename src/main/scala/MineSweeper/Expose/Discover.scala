@@ -29,8 +29,8 @@ trait Discover {
         .filter { case (cell, _) => !cell.visible }
         .traverse {
           case (cell, coords) => modify[Grid] {
-            grid => {
-              val gridModified = grid.modify(coords)(cell.makeVisible)
+            gridS => {
+              val gridModified = gridS.modify(coords)(cell.makeVisible)
               cell.kind match {
                 case Empty => gridModified.discover2(coords)
                 case _ => gridModified
