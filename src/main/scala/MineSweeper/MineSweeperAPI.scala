@@ -19,7 +19,7 @@ case class MineSweeperAPI(grid: Grid) extends Tag {
   def makePick(x: Int, y: Int): MineSweeperAPI = {
     /* Safe computation */
     grid(x)(y) match {
-      case Cell(_, _, Empty) => MineSweeperAPI(grid.discover(x, y))
+      case Cell(_, _, Empty) => MineSweeperAPI(grid.discover2(x, y))
       case _ => MineSweeperAPI(grid.makeVisible((x, y)))
     }
   }
