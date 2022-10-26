@@ -37,7 +37,7 @@ trait Discover {
               }
             }
           }
-        }.inspect(identity(_))
+        }.void
     }
 
   }
