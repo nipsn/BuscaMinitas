@@ -2,17 +2,36 @@ import MineSweeper.{AlreadyExposedCell, AlreadyTaggedCell, ArrayIndexOutOfBounds
 import cats.effect.IO
 import cats.implicits.catsSyntaxMonadIdOps
 
-import scala.io.StdIn.readLine
-
 object UI {
   val readLn: IO[String] = IO(scala.io.StdIn.readLine())
+
+  def runInit(): IO[MineSweeperAPI] = {
+    for {
+      _ <- putStrLn("Choose a grid size.\nEnter height:")
+      height <- readLn
+      _ <- putStrLn("Enter width:")
+      length <- readLn
+      _ <- putStrLn("Choose difficulty:\n1: Easy\n2: Medium\n3: Hard")
+      difficulty <- readLn
+    } yield {
+      val totalCells = height.toInt * length.toInt
+      if (difficulty == "1") {
+        MineSweeperAPI((height.toInt, length.toInt), (totalCells * 0.1).toInt)
+      } else if (difficulty == "2") {
+        MineSweeperAPI((height.toInt, length.toInt), (totalCells * 0.15).toInt)
+      } else {
+        MineSweeperAPI((height.toInt, length.toInt), (totalCells * 0.2).toInt)
+      }
+    }
+  }
+
+  def putStrLn(value: String): IO[Unit] = IO(println(value))
 
   def run(machine: MineSweeperAPI): IO[Unit] = {
     machine.iterateUntilM(machine => console(machine))(machine => machine.isFinished)
       .flatMap { machine => putStrLn("Game over. Grid was: \n" + machine.mkString) }
   }
 
-  def putStrLn(value: String): IO[Unit] = IO(println(value))
 
   def console(machine: MineSweeperAPI): IO[MineSweeperAPI] = {
     for {
