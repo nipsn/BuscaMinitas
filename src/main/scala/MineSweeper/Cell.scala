@@ -2,11 +2,22 @@ package MineSweeper
 
 case class Cell(visible: Boolean, tagged: Boolean, kind: CellKind) {
 
-  override def toString: String = if (this.tagged) "λ" else {
+  override def toString: String = if (this.tagged) Representation.flag else {
     this.kind match {
-      case Bomb => if (this.visible) "B" else " "
+      case Bomb => if (this.visible) Representation.bomb else " "
       case Empty => if (this.visible) "_" else " "
-      case Numbered(value) => if (this.visible) value.toString else " "
+      case Numbered(value) => if (this.visible) {
+        value match {
+          case 1 => Representation.one
+          case 2 => Representation.two
+          case 3 => Representation.three
+          case 4 => Representation.four
+          case 5 => Representation.five
+          case 6 => Representation.six
+          case 7 => Representation.seven
+          case 8 => Representation.eight
+        }
+      } else " "
     }
   }
 
