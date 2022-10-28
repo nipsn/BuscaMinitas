@@ -31,7 +31,7 @@ case class MineSweeperAPI(grid: Grid) extends Tag {
 
   def pick(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
     Try(this.grid(tuple))
-      .toEither.left.map{
+      .toEither.left.map {
       case _: ArrayIndexOutOfBoundsException => ArrayIndexOutOfBounds
       case e: Throwable => GenericError(e)
     }.flatMap{

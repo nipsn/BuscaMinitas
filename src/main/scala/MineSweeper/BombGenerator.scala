@@ -5,11 +5,14 @@ import scala.annotation.tailrec
 trait BombGenerator {
   implicit class BombGenerator(grid: Grid) {
 
-    def numerateGrid(size: (Int, Int)): Grid = {
+    val gridH: Int = grid.length
+    val gridD: Int = grid.head.length
+
+    def numerateGrid: Grid = {
       {
         for {
-          x <- 0 to size._1
-          y <- 0 to size._2
+          x <- 0 to gridH
+          y <- 0 to gridD
           if grid.valid(x, y) && grid(x, y).kind != Bomb
         } yield (x, y)
       }.foldLeft(grid)((myGrid, pair) => myGrid.numerateCell(pair))
@@ -21,23 +24,23 @@ trait BombGenerator {
       val newCell = if (nBombs == 0) Cell(Empty) else Cell(Numbered(nBombs))
       grid.modify(coords)(newCell)
     }
-  }
 
-  def generateRandomBombs(gridSize: (Int, Int), nBombs: Int): List[(Int, Int)] = {
-    // TODO: exception when nBombs > gridSize (x * y)
-    val (coordX, coordY) = gridSize
-    val r = scala.util.Random
+    def generateRandomBombs(nBombs: Int): Grid = {
+      // TODO: exception when nBombs > gridSize (x * y)
+      val r = scala.util.Random
 
-    @tailrec
-    def genAux(auxSet: Set[(Int, Int)], elem: (Int, Int)): Set[(Int, Int)] = {
-      if (auxSet.size < nBombs) {
-        val newSet = if (auxSet.contains(elem)) auxSet else auxSet.incl((r.nextInt(coordX), r.nextInt(coordY)))
-        genAux(newSet, (r.nextInt(coordX), r.nextInt(coordY)))
-      } else {
-        auxSet
+      @tailrec
+      def genAux(auxSet: Set[(Int, Int)], elem: (Int, Int)): Set[(Int, Int)] = {
+        if (auxSet.size < nBombs) {
+          val newSet = if (auxSet.contains(elem)) auxSet else auxSet.incl((r.nextInt(gridH), r.nextInt(gridD)))
+          genAux(newSet, (r.nextInt(gridH), r.nextInt(gridD)))
+        } else {
+          auxSet
+        }
       }
-    }
 
-    genAux(Set[(Int, Int)](), (r.nextInt(coordX), r.nextInt(coordY))).toList
+      genAux(Set[(Int, Int)](), (r.nextInt(gridH), r.nextInt(gridD))).toList
+        .foldLeft(grid)((myGrid, coords) => myGrid.modify(coords)(Cell(Bomb)))
+    }
   }
 }
