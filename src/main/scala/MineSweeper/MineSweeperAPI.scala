@@ -21,6 +21,8 @@ case class MineSweeperAPI(grid: Grid) extends Tag {
 
   def mkString: String = grid.mkString
 
+  def showResult: String = grid.makeVisible.mkString
+
   def makePick(x: Int, y: Int): MineSweeperAPI = {
     /* Safe computation */
     grid(x)(y) match {

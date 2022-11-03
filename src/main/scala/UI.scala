@@ -42,7 +42,7 @@ object UI {
 
   def run(machine: MineSweeperAPI): IO[Unit] = {
     machine.iterateUntilM(machine => console(machine))(machine => machine.isFinished)
-      .flatMap { machine => putStrLn("Game over. Grid was: \n" + machine.mkString) }
+      .flatMap { machine => putStrLn("Game over. Grid was: \n" + machine.showResult) }
   }
 
 
