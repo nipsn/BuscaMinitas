@@ -1,18 +1,14 @@
 import MineSweeper._
-import UI.{run, runInit}
-import cats.effect.unsafe.implicits.global
+import cats.effect.{ExitCode, IO, IOApp}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    /* Manually create grid */
-    //    val nBombs: Int = 10
-    //    val gameMachine = MineSweeperAPI((5, 8), nBombs)
-
-    /* Define game machine */
-    val gameMachine = runInit().unsafeRunSync()
-    println(gameMachine.grid.makeVisible.mkString + "\n")
-    run(gameMachine).unsafeRunSync()
-
-
+object Main extends IOApp {
+  def run(args: List[String]): IO[ExitCode] = {
+    for {
+      machine <- UI.buildMachine()
+      _ <- play(machine)
+    } yield ExitCode.Success
   }
+
+  def play(config: MineSweeperAPI): IO[Unit] = UI.run(config)
+
 }
