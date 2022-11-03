@@ -33,7 +33,7 @@ object UI {
         (w => putStrLn("Choose difficulty:\n1: Easy\n2: Medium\n3: Hard")
           flatMap (_ => readLn) flatMap
           (d => {
-            if (List("1", "2", "3").contains(d)) {
+            if (d == "1" | d == "2" | d == "3") {
               IO(MineSweeperAPI((h.toInt, w.toInt), d.toInt))
             } else buildMachine()
           })))
@@ -54,7 +54,7 @@ object UI {
         (x => putStrLn("Y coordinate:")
           flatMap (_ => readLn) flatMap
           (y => {
-            if (List("1", "2").contains(op)) {
+            if (op == "1" | op == "2") {
               val state = op match {
                 case "1" => machine.pick(x.toInt, y.toInt)
                 case "2" => machine.tag(x.toInt, y.toInt)
