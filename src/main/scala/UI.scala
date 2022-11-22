@@ -1,15 +1,10 @@
-import MineSweeper.{AlreadyExposedCell, AlreadyTaggedCell, ArrayIndexOutOfBounds, GenericError, MineSweeperAPI, NotAnOption}
+import MineSweeper._
 import cats.effect.IO
 import cats.implicits.catsSyntaxMonadIdOps
-import MineSweeper.Error
-import MineSweeper.Colors
-
 import scala.util.Try
 import cats.syntax.all._
 
 object UI {
-  val readLn: IO[String] = IO(scala.io.StdIn.readLine())
-
   def putStrLn(value: String): IO[Unit] = IO(println(value))
 
   implicit class ErrorStr(msg: String) {
@@ -61,9 +56,10 @@ object UI {
     } yield (xCoord, yCoord)
   }
 
-  def processResponse(state: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
-    state._1.fold(
-      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => console(state._2) >>= processResponse) },
+  def processResponse(res: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
+    val (state, machine) = res
+    state.fold(
+      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => console(machine) >>= processResponse) },
       (m: MineSweeperAPI) => IO(m)
     )
   }

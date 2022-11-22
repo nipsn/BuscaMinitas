@@ -3,7 +3,6 @@ package MineSweeper
 import org.scalatest._
 import flatspec._
 import matchers._
-
 class CellTests extends AnyFlatSpec with should.Matchers {
   val n = 1
   val bombCell: Cell = Cell(Bomb)
@@ -15,16 +14,16 @@ class CellTests extends AnyFlatSpec with should.Matchers {
     emptyCell.makeVisible.visible should be(true)
     numberedCell.makeVisible.visible should be(true)
 
-    bombCell.makeVisible.toString should be("B")
+    bombCell.makeVisible.toString should be(Representation.bomb)
     emptyCell.makeVisible.toString should be("_")
-    numberedCell.makeVisible.toString should be(n.toString)
+    numberedCell.makeVisible.toString should be(Representation.one)
   }
 
   "A cell" should "be marked" in {
     emptyCell.changeTag.tagged should be(true)
     emptyCell.changeTag.changeTag.tagged should be(false)
 
-    emptyCell.changeTag.toString should be("λ")
+    emptyCell.changeTag.toString should be(Representation.flag)
     emptyCell.changeTag.changeTag.toString should be(" ")
   }
 
