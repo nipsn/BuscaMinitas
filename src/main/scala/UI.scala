@@ -35,11 +35,11 @@ object UI {
 
 
   def run(machine: MineSweeperAPI): IO[Unit] = {
-    machine.iterateUntilM(console(_) >>= processResponse)(_.isFinished)
+    machine.iterateUntilM(next(_) >>= processResponse)(_.isFinished)
       .flatMap { machine => putStrLn("Game over. Grid was: \n" + machine.showResult) }
   }
 
-  def readSingleInt(msg: String): IO[Int] = {
+  def readSingleInt(msg: String = ""): IO[Int] = {
     IO {
       println(msg)
       Try(scala.io.StdIn.readInt).toOption
@@ -59,19 +59,19 @@ object UI {
   def processResponse(res: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
     val (state, machine) = res
     state.fold(
-      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => console(machine) >>= processResponse) },
+      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => next(machine) >>= processResponse) },
       (m: MineSweeperAPI) => IO(m)
     )
   }
 
-  def console(machine: MineSweeperAPI): IO[(Either[Error, MineSweeperAPI], MineSweeperAPI)] = {
+  def next(machine: MineSweeperAPI): IO[(Either[Error, MineSweeperAPI], MineSweeperAPI)] = {
     IO {
       println(machine.mkString + "\nWhat do you want to do?\n1. Discover a cell\n2. Flag/Unflag a cell")
       Try(scala.io.StdIn.readInt).toOption
     } >>= {
       case Some(1) => getCoords >>= { case (x, y) => IO((machine.pick(x, y), machine)) }
       case Some(2) => getCoords >>= { case (x, y) => IO((machine.tag(x, y), machine)) }
-      case _ => console(machine)
+      case _ => next(machine)
     }
   }
 
