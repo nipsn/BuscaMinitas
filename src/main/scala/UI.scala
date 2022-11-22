@@ -4,6 +4,9 @@ import cats.implicits.catsSyntaxMonadIdOps
 import MineSweeper.Error
 import MineSweeper.Colors
 
+import scala.util.Try
+import cats.syntax.all._
+
 object UI {
   val readLn: IO[String] = IO(scala.io.StdIn.readLine())
 
@@ -26,48 +29,54 @@ object UI {
   }
 
   def buildMachine(): IO[MineSweeperAPI] = {
-    putStrLn("Choose a grid size.\nEnter height:") flatMap
-      (_ => readLn) flatMap
-      (h => putStrLn("Enter width:") flatMap
-        (_ => readLn) flatMap
-        (w => putStrLn("Choose difficulty:\n1: Easy\n2: Medium\n3: Hard")
-          flatMap (_ => readLn) flatMap
-          (d => {
-            if (d == "1" | d == "2" | d == "3") {
-              IO(MineSweeperAPI((h.toInt, w.toInt), d.toInt))
-            } else buildMachine()
-          })))
+    for {
+      h <- readSingleInt("Choose a grid size.\nEnter height:")
+      w <- readSingleInt("Enter width:")
+      d <- readSingleInt("Choose difficulty:\n1: Easy\n2: Medium\n3: Hard")
+      machine <- if (d == 1 | d == 2 | d == 3) IO(MineSweeperAPI((h, w), d))
+                 else buildMachine()
+    } yield machine
   }
 
 
   def run(machine: MineSweeperAPI): IO[Unit] = {
-    machine.iterateUntilM(machine => console(machine))(machine => machine.isFinished)
+    machine.iterateUntilM(console(_) >>= processResponse)(_.isFinished)
       .flatMap { machine => putStrLn("Game over. Grid was: \n" + machine.showResult) }
   }
 
-
-  def console(machine: MineSweeperAPI): IO[MineSweeperAPI] = {
-    putStrLn(machine.mkString + "\nWhat do you want to do?\n1. Discover a cell\n2. Flag/Unflag a cell") flatMap
-      (_ => readLn) flatMap
-      (op => putStrLn("X coordinate:") flatMap
-        (_ => readLn) flatMap
-        (x => putStrLn("Y coordinate:")
-          flatMap (_ => readLn) flatMap
-          (y => {
-            if (op == "1" | op == "2") {
-              val state = op match {
-                case "1" => machine.pick(x.toInt, y.toInt)
-                case "2" => machine.tag(x.toInt, y.toInt)
-              }
-              state.fold(
-                (e: Error) => {
-                  // TODO: fix out of bounds error
-                  putStrLn(e.mkStr).flatMap(_ => console(machine))
-                },
-                (m: MineSweeperAPI) => IO(m))
-            } else console(machine)
-          })))
+  def readSingleInt(msg: String): IO[Int] = {
+    IO {
+      println(msg)
+      Try(scala.io.StdIn.readInt).toOption
+    } >>= {
+      case Some(n) => IO(n)
+      case _ => readSingleInt(msg)
+    }
   }
 
+  def getCoords: IO[(Int, Int)] = {
+    for {
+      xCoord <- readSingleInt("X coordinate:")
+      yCoord <- readSingleInt("Y coordinate:")
+    } yield (xCoord, yCoord)
+  }
+
+  def processResponse(state: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
+    state._1.fold(
+      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => console(state._2) >>= processResponse) },
+      (m: MineSweeperAPI) => IO(m)
+    )
+  }
+
+  def console(machine: MineSweeperAPI): IO[(Either[Error, MineSweeperAPI], MineSweeperAPI)] = {
+    IO {
+      println(machine.mkString + "\nWhat do you want to do?\n1. Discover a cell\n2. Flag/Unflag a cell")
+      Try(scala.io.StdIn.readInt).toOption
+    } >>= {
+      case Some(1) => getCoords >>= { case (x, y) => IO((machine.pick(x, y), machine)) }
+      case Some(2) => getCoords >>= { case (x, y) => IO((machine.tag(x, y), machine)) }
+      case _ => console(machine)
+    }
+  }
 
 }
