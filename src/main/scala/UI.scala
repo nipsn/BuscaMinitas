@@ -16,7 +16,6 @@ object UI {
   implicit class ErrorUtils(error: Error) {
     def mkStr: String = error match {
       case AlreadyExposedCell => "Already exposed cell".pretty
-      case AlreadyTaggedCell => "Already tagged cell".pretty
       case ArrayIndexOutOfBounds => "Coordinate out of bounds".pretty
       case NotAnOption => "Not a valid option".pretty
       case GenericError(e) => e.toString.pretty
@@ -59,7 +58,7 @@ object UI {
   def processResponse(res: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
     val (state, machine) = res
     state.fold(
-      (e: Error) => { putStrLn(e.mkStr).flatMap(_ => next(machine) >>= processResponse) },
+      (e: Error) => { putStrLn(e.mkStr) >>= (_ => next(machine) >>= processResponse) },
       (m: MineSweeperAPI) => IO(m)
     )
   }

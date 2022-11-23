@@ -6,11 +6,10 @@ trait Tag {
 
   implicit class TagImp(grid: Grid) {
 
-    def tag(x: Int, y: Int): Either[Error, Grid] = {
-      if (!grid(x, y).visible) Right(grid.modify(x, y)(grid(x, y).changeTag))
-      else Left(AlreadyTaggedCell)
+    def tag(x: Int, y: Int): Grid = {
+      grid.modify(x, y)(grid(x, y).changeTag)
     }
 
-    def tag(coords: (Int, Int)): Either[Error, Grid] = tag(coords._1, coords._2)
+    def tag(coords: (Int, Int)): Grid = tag(coords._1, coords._2)
   }
 }

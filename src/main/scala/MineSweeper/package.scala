@@ -21,7 +21,7 @@ package object MineSweeper extends BombGenerator {
 
     def apply(x: Int, y: Int): Cell = grid(x)(y)
 
-    def apply(tuple: (Int, Int)): Cell = grid(tuple._1)(tuple._2)
+    def apply(coords: (Int, Int)): Cell = grid(coords._1)(coords._2)
 
     def modify(x: Int, y: Int)(cell: Cell): Grid = grid.updated(x, grid(x).updated(y, cell))
 
@@ -40,7 +40,7 @@ package object MineSweeper extends BombGenerator {
       grid.map(_.map(_.makeVisible))
     }
 
-    def makeVisible(tuple: (Int, Int)): Grid = grid.modify(tuple)(grid(tuple).makeVisible)
+    def makeVisible(coords: (Int, Int)): Grid = grid.modify(coords)(grid(coords).makeVisible)
 
     def mkString: String = grid.map(row => row.map(cell => cell.toString).mkString("[", "][", "]")).mkString("\n")
 

@@ -2,6 +2,7 @@ package MineSweeper
 
 import scala.util.Try
 import Expose._
+import cats.syntax.all._
 
 case class MineSweeperAPI(grid: Grid) extends Tag {
 
@@ -30,21 +31,29 @@ case class MineSweeperAPI(grid: Grid) extends Tag {
       case _ => MineSweeperAPI(grid.makeVisible((x, y)))
     }
   }
+  def makeTag(x: Int, y: Int): MineSweeperAPI = {
+    /* Safe computation */
+    MineSweeperAPI(this.grid.tag(x, y))
+  }
 
-  def pick(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
-    Try(this.grid(tuple))
+  def manageErrorOrExecute(coords: (Int, Int), f: (Int, Int) => MineSweeperAPI): Either[Error, MineSweeperAPI] = {
+    val (x, y) = coords
+    Try(this.grid(x, y))
       .toEither.left.map {
       case _: ArrayIndexOutOfBoundsException => ArrayIndexOutOfBounds
       case e: Throwable => GenericError(e)
-    }.flatMap{
+    } >>= {
       case Cell(true, _, _) => Left(AlreadyExposedCell)
-      case Cell(_, true, _) => Left(AlreadyTaggedCell)
-      case _ => Right(this.makePick(tuple._1, tuple._2))
+      case _ => Right(f(x, y))
     }
   }
 
-  def tag(tuple: (Int, Int)): Either[Error, MineSweeperAPI] = {
-    this.grid.tag(tuple).map(grid => MineSweeperAPI(grid))
+  def pick(coords: (Int, Int)): Either[Error, MineSweeperAPI] = {
+    manageErrorOrExecute(coords, (x, y) => this.makePick(x, y))
+  }
+
+  def tag(coords: (Int, Int)): Either[Error, MineSweeperAPI] = {
+    manageErrorOrExecute(coords, (x, y) => this.makeTag(x, y))
   }
 
 }
