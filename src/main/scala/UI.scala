@@ -27,11 +27,13 @@ object UI {
       h <- readSingleInt("Choose a grid size.\nEnter height:")
       w <- readSingleInt("Enter width:")
       d <- readSingleInt("Choose difficulty:\n1: Easy\n2: Medium\n3: Hard")
-      machine <- if (d == 1 | d == 2 | d == 3) IO(MineSweeperAPI((h, w), d))
-                 else buildMachine()
+      hasSeed <- readSingleInt("Do you have a seed to build the grid?\n1: Yes\n2: No")
+      machine <- if (d == 1 | d == 2 | d == 3) {
+                     if (hasSeed == 1) readSingleInt("Please enter your seed:") >>= (s => IO(MineSweeperAPI((h, w), d, Some(s))))
+                     else IO(MineSweeperAPI((h, w), d, None))
+                 } else buildMachine()
     } yield machine
   }
-
 
   def run(machine: MineSweeperAPI): IO[Unit] = {
     machine.iterateUntilM(next(_) >>= processResponse)(_.isFinished)
@@ -56,14 +58,14 @@ object UI {
   }
 
   def processResponse(res: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {
-    val (state, machine) = res
+    val (state, last) = res
     state.fold(
-      (e: Error) => { putStrLn(e.mkStr) >>= (_ => next(machine) >>= processResponse) },
+      (e: Error) => { putStrLn(e.mkStr) >>= (_ => next(last) >>= processResponse) },
       (m: MineSweeperAPI) => IO(m)
     )
   }
 
-  def next(machine: MineSweeperAPI): IO[(Either[Error, MineSweeperAPI], MineSweeperAPI)] = {
+  def next(machine: MineSweeperAPI): IO[( Either[Error, MineSweeperAPI], MineSweeperAPI )] = {
     IO {
       println(machine.mkString + "\nWhat do you want to do?\n1. Discover a cell\n2. Flag/Unflag a cell")
       Try(scala.io.StdIn.readInt).toOption

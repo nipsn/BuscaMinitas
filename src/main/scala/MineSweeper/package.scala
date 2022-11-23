@@ -9,9 +9,9 @@ package object MineSweeper extends BombGenerator {
     def emptyGrid: Grid = Array.ofDim[Cell](size._1, size._2)
       .map(row => row.map(_ => Cell(Empty)))
 
-    def initialGrid(nBombs: Int): Grid = {
+    def initialGrid(nBombs: Int, seed: Option[Int]): Grid = {
       emptyGrid
-        .generateRandomBombs(nBombs)
+        .generateRandomBombs(nBombs, seed)
         .numerateGrid
     }
   }

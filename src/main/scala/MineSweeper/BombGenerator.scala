@@ -25,9 +25,12 @@ trait BombGenerator {
       grid.modify(coords)(newCell)
     }
 
-    def generateRandomBombs(nBombs: Int): Grid = {
+    def generateRandomBombs(nBombs: Int, seed: Option[Int]): Grid = {
       // TODO: exception when nBombs > gridSize (x * y)
-      val r = scala.util.Random
+      val r = seed match {
+        case Some(s) => new scala.util.Random(s)
+        case None => new scala.util.Random
+      }
 
       @tailrec
       def genAux(auxSet: Set[(Int, Int)], elem: (Int, Int)): Set[(Int, Int)] = {

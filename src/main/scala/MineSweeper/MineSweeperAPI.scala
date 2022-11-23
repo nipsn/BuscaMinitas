@@ -64,7 +64,7 @@ object MineSweeperAPI{
   def apply(side: Int): MineSweeperAPI = MineSweeperAPI(grid = (side, side).emptyGrid)
 
   /* Initial grid with random bomb placement */
-  def apply(size: (Int, Int), difficulty: Int): MineSweeperAPI = MineSweeperAPI(grid = {
+  def apply(size: (Int, Int), difficulty: Int, seed: Option[Int]): MineSweeperAPI = MineSweeperAPI(grid = {
     val (height, length) = size
     val totalCells = height * length
     val nBombs = if (difficulty == 1) {
@@ -74,7 +74,7 @@ object MineSweeperAPI{
     } else {
       (totalCells * 0.2).toInt
     }
-    size.initialGrid(nBombs)
+    size.initialGrid(nBombs, seed)
   })
 
 }
