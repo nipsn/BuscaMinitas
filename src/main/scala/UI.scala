@@ -52,7 +52,7 @@ object UI {
     for {
       xCoord <- readSingleInt("X coordinate:")
       yCoord <- readSingleInt("Y coordinate:")
-    } yield (xCoord, yCoord)
+    } yield (yCoord, xCoord)
   }
 
   def processResponse(res: (Either[Error, MineSweeperAPI], MineSweeperAPI)): IO[MineSweeperAPI] = {

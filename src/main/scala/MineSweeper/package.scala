@@ -46,11 +46,11 @@ package object MineSweeper extends BombGenerator {
 
     def getAdjacents(coords: (Int, Int)): List[(Cell, (Int, Int))] = {
       for {
-        x <- (-1 to 1).map(_ + coords._1).toList
-        y <- (-1 to 1).map(_ + coords._2).toList
+        x <- (-1 to 1).map(_ + coords._1)
+        y <- (-1 to 1).map(_ + coords._2)
         if (x, y) != coords && grid.valid(x, y)
       } yield (grid(x, y), (x, y))
-    }
+    }.toList
   }
 
 }
