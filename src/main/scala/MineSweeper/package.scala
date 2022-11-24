@@ -48,7 +48,7 @@ package object MineSweeper extends BombGenerator {
       for {
         x <- (-1 to 1).map(_ + coords._1)
         y <- (-1 to 1).map(_ + coords._2)
-        if (x, y) != coords && grid.valid(x, y)
+        if grid.valid(x, y)
       } yield (grid(x, y), (x, y))
     }.toList
   }
