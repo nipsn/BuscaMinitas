@@ -1,49 +1,98 @@
 package MineSweeper
-import cats.data.State
-import cats.data.State._
+import scala.annotation.tailrec
 
 object Programs {
 
-  implicit class TestUtils(state: Either[Error, MineSweeperAPI]) {
-    // ignora los errores y devuelve la maquina
-    // se que con mis operaciones en este fichero no van a saltar errores a menos que sean intencionados
-    def getMineSweeperAPI: MineSweeperAPI = {
-      state match {
+  type Coords = (Int, Int)
+  type Operation = (MineSweeperAPI, Coords) => Either[Error, MineSweeperAPI]
+  type Program = List[Step]
+  sealed trait Step
+  case class Pick(coords: Coords) extends Step
+  case class Tag(coords: Coords) extends Step
+
+
+
+  implicit class ProgramUtils(program: List[Step]) {
+    def run(initialState: MineSweeperAPI): Either[Error, MineSweeperAPI] = {
+      @tailrec
+      // While we still have steps to run, if step is successful run next step, else return the error
+      def runStep(state: MineSweeperAPI, steps: List[Step]): Either[Error, MineSweeperAPI] = {
+        if (steps.nonEmpty) {
+          (steps.head match {
+            case Pick(coords) => state.pick(coords)
+            case Tag(coords) => state.tag(coords)
+          }) match {
+            case Right(m) => runStep(m, steps.tail)
+            case Left(e) => Left(e)
+          }
+        } else Right(state)
+      }
+
+      runStep(initialState, program)
+    }
+  }
+  implicit class TestUtils(s: Either[Error, MineSweeperAPI]) {
+    def state: MineSweeperAPI = {
+      s match {
         case Right(m: MineSweeperAPI) => m
+      }
+    }
+
+    def error: Error = {
+      s match {
+        case Left(e: Error) => e
       }
     }
   }
 
-  def partialGameRoutineTagSteps: State[MineSweeperAPI, Unit] = {
-    for {
-      _ <- modify[MineSweeperAPI](_.tag(0, 0).getMineSweeperAPI)
-    } yield get[MineSweeperAPI]
-  }
+  val winnerProgram: Program = List(
+    Pick((0, 0)),
+    Pick((3, 3)),
+    Pick((3, 4)),
+    Pick((4, 4)),
+    Pick((4, 3)),
+    Pick((4, 0)),
+    Tag((2, 3)),
+    Tag((2, 4)),
+    Tag((4, 5)),
+    Tag((4, 1))
+  )
 
-  def partialGameRoutinePickSteps: State[MineSweeperAPI, Unit] = {
-    for {
-      _ <- modify[MineSweeperAPI](_.pick(0, 0).getMineSweeperAPI)
-    } yield get[MineSweeperAPI]
-  }
+  val tagAllBombs: List[Step] = List(
+    Tag((2, 3)),
+    Tag((2, 4)),
+    Tag((4, 5)),
+    Tag((4, 1))
+  )
 
-  def loserGameRoutineSteps: State[MineSweeperAPI, Unit] = {
-    for {
-      _ <- modify[MineSweeperAPI](_.pick(2, 3).getMineSweeperAPI)
-    } yield get[MineSweeperAPI]
-  }
+  val singleTag: List[Step] = List(
+    Tag((0, 0))
+  )
 
-  def winnerGameRoutineSteps: State[MineSweeperAPI, Unit] = {
-    for {
-      _ <- modify[MineSweeperAPI](_.pick(0, 0).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.tag(2, 3).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.tag(2, 4).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.pick(3, 3).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.pick(3, 4).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.tag(4, 5).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.pick(4, 4).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.pick(4, 3).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.tag(4, 1).getMineSweeperAPI)
-      _ <- modify[MineSweeperAPI](_.pick(4, 0).getMineSweeperAPI)
-    } yield get[MineSweeperAPI]
-  }
+  val singlePick: List[Step] = List(
+    Pick((0, 0))
+  )
+
+  val loserProgram: List[Step] = List(
+    Pick((2, 3))
+  )
+
+  val errorOutOfBoundsProgramPick: List[Step] = List(
+    Pick((99, 99))
+  )
+
+  val errorOutOfBoundsProgramTag: List[Step] = List(
+    Tag((99, 99))
+  )
+
+  val errorAlreadyExposedCellPick: List[Step] = List(
+    Pick((0, 0)),
+    Pick((0, 0))
+  )
+
+  val errorAlreadyExposedCellTag: List[Step] = List(
+    Pick((0, 0)),
+    Tag((0, 0))
+  )
+
 }
