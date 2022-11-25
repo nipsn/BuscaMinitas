@@ -14,9 +14,12 @@ object Programs {
 
   implicit class ProgramUtils(program: List[Step]) {
     def run(initialState: MineSweeperAPI): Either[Error, MineSweeperAPI] = {
+      println("Grid is: " + initialState.showResult)
+
       @tailrec
       // While we still have steps to run, if step is successful run next step, else return the error
       def runStep(state: MineSweeperAPI, steps: List[Step]): Either[Error, MineSweeperAPI] = {
+        println(state.mkString)
         if (steps.nonEmpty) {
           (steps.head match {
             case Pick(coords) => state.pick(coords)

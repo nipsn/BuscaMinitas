@@ -59,10 +59,6 @@ case class MineSweeperAPI(grid: Grid) extends Tag {
 }
 
 object MineSweeperAPI{
-
-  /* Empty squared Grid */
-  def apply(side: Int): MineSweeperAPI = MineSweeperAPI(grid = (side, side).emptyGrid)
-
   /* Initial grid with random bomb placement */
   def apply(size: (Int, Int), difficulty: Int, seed: Option[Int]): MineSweeperAPI = MineSweeperAPI(grid = {
     val (height, length) = size

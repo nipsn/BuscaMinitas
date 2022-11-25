@@ -10,6 +10,5 @@ trait Tag {
       grid.modify(x, y)(grid(x, y).changeTag)
     }
 
-    def tag(coords: (Int, Int)): Grid = tag(coords._1, coords._2)
   }
 }
